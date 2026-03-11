@@ -1,0 +1,10 @@
+{
+  "$schema": "./satisfying.schema.json",
+  "version": 2,
+  "description": "Main generation defaults for Satisfying Factory.",
+  "duration": 60,
+  "loopCategory": "slime",
+  "musicCategory": "ambient",
+  "variants": 3,
+  "intensity": "medium"
+}

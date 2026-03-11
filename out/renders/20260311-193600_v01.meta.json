@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "runId": "20260311-193600",
+  "variant": 1,
+  "seed": 51513769,
+  "duration": 18,
+  "videoSpeed": 2.5,
+  "intensity": "medium",
+  "loops": [
+    "plain_concat_test.mp4"
+  ],
+  "music": "alexgrohl-dark-mystery-trailer-taking-our-time-131566.mp3",
+  "overlays": [
+    {
+      "t": 0.42629708062219296,
+      "text": "dont skip",
+      "position": "top",
+      "style": "default"
+    },
+    {
+      "t": 3.6,
+      "text": "hold on",
+      "position": "center",
+      "style": "default"
+    },
+    {
+      "t": 7.2,
+      "text": "should I make more?",
+      "position": "bottom",
+      "style": "subtle"
+    },
+    {
+      "t": 9,
+      "text": "not yet...",
+      "position": "top",
+      "style": "default"
+    },
+    {
+      "t": 12.6,
+      "text": "how relaxing is this?",
+      "position": "bottom",
+      "style": "subtle"
+    },
+    {
+      "t": 14.4,
+      "text": "YES",
+      "position": "center",
+      "style": "emphasis"
+    }
+  ],
+  "generatedAt": "2026-03-11T17:36:12.423Z"
+}

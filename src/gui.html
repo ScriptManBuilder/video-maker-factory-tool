@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Satisfying Factory</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #131320;
+  --surface2: #1a1a2e;
+  --surface3: #242440;
+  --border: #2a2a42;
+  --border-light: #3a3a58;
+  --accent: #7c5cfc;
+  --accent-hover: #9078ff;
+  --accent-dim: rgba(124,92,252,0.12);
+  --accent-glow: rgba(124,92,252,0.25);
+  --green: #3dd68c;
+  --green-dim: rgba(61,214,140,0.1);
+  --red: #f05060;
+  --red-dim: rgba(240,80,96,0.1);
+  --yellow: #f0c040;
+  --yellow-dim: rgba(240,192,64,0.1);
+  --blue: #50a0f0;
+  --blue-dim: rgba(80,160,240,0.1);
+  --pink: #f472b6;
+  --pink-dim: rgba(244,114,182,0.1);
+  --text: #e0e0e8;
+  --text2: #8888a0;
+  --text3: #5a5a72;
+  --mono: 'Consolas', 'Courier New', monospace;
+  --radius: 10px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
+
+/* ── layout ── */
+.app { display:grid; grid-template-columns:220px 1fr; grid-template-rows:auto 1fr; height:100vh; }
+
+/* ── header ── */
+header {
+  grid-column:1/-1;
+  background:linear-gradient(135deg, var(--surface) 0%, #1a1530 100%);
+  border-bottom:1px solid var(--border);
+  padding:10px 20px;
+  display:flex; align-items:center; gap:12px;
+  user-select:none;
+}
+.logo { width:32px; height:32px; background:linear-gradient(135deg,var(--accent),#b06cfc); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; box-shadow:0 2px 12px var(--accent-glow); }
+header h1 { font-size:16px; font-weight:700; background:linear-gradient(90deg,#fff,var(--accent-hover)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+header .ver { color:var(--text3); font-size:11px; font-family:var(--mono); background:var(--surface2); padding:2px 8px; border-radius:4px; }
+
+/* ── sidebar ── */
+.sidebar {
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  padding:8px 0;
+  overflow-y:auto;
+}
+.nav-section { padding:12px 16px 4px; font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text3); font-weight:600; }
+.nav-item {
+  padding:9px 16px 9px 14px;
+  cursor:pointer;
+  border-left:3px solid transparent;
+  font-size:13px;
+  display:flex; align-items:center; gap:10px;
+  transition:all .15s;
+  color:var(--text2);
+}
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:linear-gradient(90deg,var(--accent-dim),transparent); border-left-color:var(--accent); color:white; font-weight:500; }
+.nav-item .icon { font-size:15px; width:20px; text-align:center; }
+.nav-item .badge {
+  margin-left:auto; background:var(--accent-dim); color:var(--accent);
+  font-size:10px; padding:1px 7px; border-radius:10px; font-weight:600;
+}
+
+/* ── main content ── */
+.main { display:flex; flex-direction:column; overflow:hidden; }
+.content-scroll { flex:1; overflow-y:auto; padding:20px 24px; }
+
+/* ── panels ── */
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* ── section box ── */
+.section-box {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  margin-bottom:16px;
+  overflow:hidden;
+}
+.section-header {
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+  font-size:13px; font-weight:600;
+}
+.section-header .sh-icon {
+  width:26px; height:26px; border-radius:6px;
+  display:flex; align-items:center; justify-content:center; font-size:13px;
+}
+.section-header .sh-icon.green { background:var(--green-dim); }
+.section-header .sh-icon.blue { background:var(--blue-dim); }
+.section-header .sh-icon.yellow { background:var(--yellow-dim); }
+.section-header .sh-icon.purple { background:var(--accent-dim); }
+.section-header .sh-icon.red { background:var(--red-dim); }
+.section-header .sh-desc { font-weight:400; color:var(--text2); font-size:12px; margin-left:auto; }
+.section-body { padding:14px 16px; }
+
+/* ── form ── */
+.form-row { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+.form-row:last-child { margin-bottom:0; }
+.field { display:flex; flex-direction:column; gap:3px; flex:1; min-width:140px; }
+.field.w2 { flex:2; min-width:200px; }
+.field.w3 { flex:3; }
+.field label { font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; font-weight:500; }
+.field .hint { font-size:10px; color:var(--text3); margin-top:1px; }
+.toggle-field { justify-content:flex-end; min-width:190px; }
+.toggle-line { display:flex; align-items:center; gap:8px; min-height:33px; font-size:12px; color:var(--text); }
+.toggle-line input[type="checkbox"] { accent-color: var(--accent); width:14px; height:14px; }
+input, select {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:7px 10px;
+  color:var(--text);
+  font-size:13px;
+  outline:none;
+  transition:border-color .15s;
+  font-family:inherit;
+}
+input:focus, select:focus { border-color:var(--accent); }
+input::placeholder { color:var(--text3); }
+select { cursor:pointer; }
+input[type="number"] { font-family:var(--mono); }
+
+/* ── buttons ── */
+.btn {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:8px 18px; border:none; border-radius:7px;
+  font-size:13px; font-weight:600; cursor:pointer;
+  transition:all .12s; font-family:inherit;
+}
+.btn-primary { background:linear-gradient(135deg,var(--accent),#9060ff); color:white; box-shadow:0 2px 12px var(--accent-glow); }
+.btn-primary:hover { background:linear-gradient(135deg,var(--accent-hover),#a070ff); transform:translateY(-1px); box-shadow:0 4px 20px var(--accent-glow); }
+.btn-primary:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+.btn-secondary:hover { background:var(--surface3); }
+.btn-sm { padding:5px 12px; font-size:12px; }
+.btn-row { display:flex; gap:8px; margin-top:14px; }
+
+/* ── preset chips ── */
+.presets { display:flex; gap:8px; flex-wrap:wrap; }
+.preset {
+  background:var(--surface2); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; cursor:pointer; font-size:12px; transition:all .12s;
+  display:flex; align-items:center; gap:6px;
+}
+.preset:hover { border-color:var(--accent); background:var(--accent-dim); transform:translateY(-1px); box-shadow:0 3px 12px rgba(0,0,0,0.2); }
+.preset .p-label { font-weight:600; }
+.preset .p-detail { color:var(--text2); }
+
+/* ── console ── */
+.console-area {
+  border-top:1px solid var(--border);
+  background:#0a0a0e;
+  flex-shrink:0;
+  display:flex; flex-direction:column;
+}
+.console-header {
+  padding:6px 14px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  font-size:11px; color:var(--text2);
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer; user-select:none;
+}
+.console-header:hover { background:var(--surface2); }
+.status-dot { width:7px; height:7px; border-radius:50%; background:var(--text3); flex-shrink:0; }
+.status-dot.running { background:var(--yellow); animation:pulse 1s infinite; }
+.status-dot.done { background:var(--green); }
+.status-dot.error { background:var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.console-actions { margin-left:auto; display:flex; gap:6px; }
+#console-output {
+  padding:8px 14px;
+  font-family:var(--mono);
+  font-size:11px; line-height:1.6;
+  overflow-y:auto;
+  white-space:pre-wrap; word-break:break-all;
+  color:#909098;
+  height:0;
+  transition:height .2s;
+}
+#console-output.expanded { height:260px; }
+#console-output .line-ok { color:var(--green); }
+#console-output .line-err { color:var(--red); }
+#console-output .line-info { color:var(--yellow); }
+
+/* ── file cards ── */
+.file-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+.file-card {
+  background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+  overflow:hidden; transition:border-color .12s;
+}
+.file-card:hover { border-color:var(--accent); box-shadow:0 4px 16px rgba(124,92,252,0.15); transform:translateY(-2px); }
+.file-card .thumb { width:100%; height:140px; object-fit:cover; background:var(--surface3); display:block; }
+.file-card .thumb-placeholder {
+  width:100%; height:140px; display:flex; align-items:center; justify-content:center;
+  background:var(--surface3); color:var(--text3); font-size:28px;
+}
+.file-card .fc-info { padding:8px 12px; display:flex; justify-content:space-between; align-items:center; }
+.file-card .fc-name { font-size:12px; font-family:var(--mono); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+.file-card .fc-actions { display:flex; gap:6px; }
+.file-card .fc-actions a { color:var(--accent); font-size:11px; text-decoration:none; }
+.file-card .fc-actions a:hover { text-decoration:underline; }
+
+/* ── asset chips ── */
+.asset-section { margin-bottom:20px; }
+.asset-section h3 { font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.asset-chips { display:flex; flex-wrap:wrap; gap:5px; }
+.asset-chip {
+  background:var(--surface2); border:1px solid var(--border); border-radius:4px;
+  padding:3px 8px; font-size:11px; color:var(--text2); font-family:var(--mono);
+}
+
+/* ── folder tree ── */
+.folder-tree { font-family:var(--mono); font-size:12px; line-height:1.8; color:var(--text2); padding:8px 0; }
+.folder-tree .ft-folder { color:var(--yellow); font-weight:600; }
+.folder-tree .ft-file { color:var(--text2); }
+.folder-tree .ft-desc { color:var(--text3); font-size:11px; font-family:'Segoe UI',sans-serif; }
+
+/* ── empty state ── */
+.empty-state { text-align:center; padding:40px; color:var(--text3); }
+.empty-state .es-icon { font-size:36px; margin-bottom:10px; }
+.empty-state .es-text { font-size:14px; }
+
+/* scrollbar */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--border-light); }
+
+/* ── extra polish ── */
+.section-box { transition:border-color .15s, box-shadow .15s; }
+.section-box:hover { border-color:var(--border-light); box-shadow:0 2px 16px rgba(0,0,0,0.15); }
+.preset { transition:all .15s; }
+.file-card { transition:all .15s; }
+.btn { transition:all .15s; }
+input, select { transition:border-color .15s, box-shadow .15s; }
+input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-dim); }
+
+/* ── stat badges ── */
+.stat-row { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+.stat-badge {
+  background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+  padding:8px 14px; display:flex; flex-direction:column; gap:2px; min-width:100px;
+}
+.stat-badge .sb-val { font-size:20px; font-weight:700; font-family:var(--mono); color:white; }
+.stat-badge .sb-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+
+/* ── font preview style ── */
+#font-preview { letter-spacing:0.5px; }
+
+/* ── speed slider ── */
+.speed-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.speed-row .toggle-line { white-space:nowrap; }
+.speed-slider-wrap { display:flex; align-items:center; gap:10px; flex:1; min-width:200px; }
+.speed-slider-wrap input[type="range"] {
+  -webkit-appearance:none; appearance:none; flex:1; height:6px;
+  background:var(--surface3); border-radius:3px; outline:none;
+}
+.speed-slider-wrap input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+  background:var(--accent); cursor:pointer; box-shadow:0 1px 6px var(--accent-glow);
+}
+.speed-slider-wrap input[type="range"]:disabled::-webkit-slider-thumb { background:var(--text3); cursor:default; }
+.speed-slider-wrap input[type="range"]:disabled { opacity:0.35; }
+.speed-val {
+  font-family:var(--mono); font-size:15px; font-weight:700;
+  color:var(--accent); min-width:48px; text-align:center;
+}
+.speed-val.off { color:var(--text3); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="logo">🎬</div>
+  <h1>Satisfying Factory</h1>
+  <span class="ver">v2.0</span>
+</header>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="nav-section">Create</div>
+  <div class="nav-item active" data-panel="make">
+    <span class="icon">🎬</span> Generate Video
+  </div>
+  <div class="nav-item" data-panel="concat">
+    <span class="icon">🔗</span> Concat / Stitch
+  </div>
+
+  <div class="nav-section">Files</div>
+  <div class="nav-item" data-panel="sources">
+    <span class="icon">📥</span> Source Files
+    <span class="badge" id="badge-sources">—</span>
+  </div>
+  <div class="nav-item" data-panel="output">
+    <span class="icon">📤</span> Output
+    <span class="badge" id="badge-output">—</span>
+  </div>
+
+  <div class="nav-section">System</div>
+  <div class="nav-item" data-panel="doctor">
+    <span class="icon">🩺</span> Doctor
+  </div>
+  <div class="nav-item" data-panel="structure">
+    <span class="icon">📂</span> Project Map
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+<div class="content-scroll">
+
+  <!-- ═══════════════ GENERATE VIDEO ═══════════════ -->
+  <div class="panel active" id="panel-make">
+
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon purple">⚡</div>
+        Quick Presets
+        <span class="sh-desc">Click to fill settings &amp; start immediately</span>
+      </div>
+      <div class="section-body">
+        <div class="presets">
+          <div class="preset" onclick="quickMake(1, 20, 'high')">
+            <span class="p-label">TikTok Test</span>
+            <span class="p-detail">1x20s high</span>
+          </div>
+          <div class="preset" onclick="quickMake(3, 58, 'medium')">
+            <span class="p-label">Standard 58s</span>
+            <span class="p-detail">3x58s medium</span>
+          </div>
+          <div class="preset" onclick="quickMake(3, 60, 'medium')">
+            <span class="p-label">Standard 60s</span>
+            <span class="p-detail">3x60s medium</span>
+          </div>
+          <div class="preset" onclick="quickMake(5, 45, 'medium')">
+            <span class="p-label">Batch Shorts</span>
+            <span class="p-detail">5x45s medium</span>
+          </div>
+          <div class="preset" onclick="quickMake(1, 90, 'low')">
+            <span class="p-label">Long Relax</span>
+            <span class="p-detail">1x90s low</span>
+          </div>
+          <div class="preset" onclick="quickMake(1, 15, 'high')">
+            <span class="p-label">Reel Flash</span>
+            <span class="p-detail">1x15s high</span>
+          </div>
+          <div class="preset" onclick="quickMake(10, 30, 'high')">
+            <span class="p-label">Mass Batch</span>
+            <span class="p-detail">10x30s high</span>
+          </div>
+          <div class="preset" onclick="quickMake(3, 120, 'low')">
+            <span class="p-label">Long Zen</span>
+            <span class="p-detail">3x120s low</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon blue">⚙</div>
+        Generation Settings
+      </div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="field">
+            <label>Variants Count</label>
+            <input type="number" id="make-variants" value="3" min="1" max="50">
+            <span class="hint">How many different videos to create</span>
+          </div>
+          <div class="field">
+            <label>Duration (seconds)</label>
+            <input type="number" id="make-duration" value="60" min="1" max="600" step="1">
+            <span class="hint">Type any number: 20, 45, 58, 90...</span>
+          </div>
+          <div class="field">
+            <label>Intensity</label>
+            <select id="make-intensity">
+              <option value="low">🟢 Low — calm, less text</option>
+              <option value="medium" selected>🟡 Medium — balanced</option>
+              <option value="high">🔴 High — fast, lots of text</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Video Loops (source)</label>
+            <select id="make-loop"></select>
+            <span class="hint">📥 From: assets/loops/</span>
+          </div>
+          <div class="field">
+            <label>Music (source)</label>
+            <select id="make-music"></select>
+            <span class="hint">📥 From: assets/music/</span>
+          </div>
+          <div class="field">
+            <label>Template</label>
+            <select id="make-template">
+              <option value="">Default (satisfying.json)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Font</label>
+            <select id="make-font">
+              <option value="">Default (Poppins-Bold)</option>
+            </select>
+            <span class="hint">🔤 From: assets/fonts/</span>
+          </div>
+          <div class="field w2" id="font-preview-wrap">
+            <label>Font Preview</label>
+            <div id="font-preview" style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:20px;color:white;min-height:44px;display:flex;align-items:center">
+              so satisfying — PERFECT
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field w3">
+            <label>⚡ Video Speed</label>
+            <div class="speed-row">
+              <label class="toggle-line"><input type="checkbox" id="make-speed-on" onchange="toggleSpeed('make')"> Speed up</label>
+              <div class="speed-slider-wrap">
+                <input type="range" id="make-speed" min="1" max="2.5" step="0.05" value="1.50" disabled>
+                <span class="speed-val off" id="make-speed-val">1.00x</span>
+              </div>
+            </div>
+            <span class="hint">Check to enable, drag slider 1.00–2.50×</span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btn-make" onclick="runMake()">🎬 Generate Videos</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon green">📁</div>
+        Where files go
+      </div>
+      <div class="section-body">
+        <div class="folder-tree">
+          <span class="ft-folder">📥 assets/loops/</span> <span class="ft-desc">← your source video loops (INPUT)</span><br>
+          <span class="ft-folder">📥 assets/music/</span> <span class="ft-desc">← your source music tracks (INPUT)</span><br>
+          <span class="ft-folder">📤 out/renders/</span> <span class="ft-desc">← generated videos go here (OUTPUT)</span><br>
+          <span class="ft-folder">📤 out/thumbs/</span> <span class="ft-desc">← thumbnails go here (OUTPUT)</span><br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CONCAT ═══════════════ -->
+  <div class="panel" id="panel-concat">
+
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon blue">ℹ</div>
+        How Concat Works
+        <span class="sh-desc">Stitches numbered scene files into one video</span>
+      </div>
+      <div class="section-body" style="font-size:12px;color:var(--text2);line-height:1.7">
+        Looks for files like <code style="color:var(--yellow)">mat2_scene_1.mp4</code>, <code style="color:var(--yellow)">mat2_scene_2.mp4</code>, ... in the video directory.
+        Glues them together and optionally adds music and subtitles, then outputs one final video.
+      </div>
+    </div>
+
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon purple">⚙</div>
+        Concat Settings
+      </div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="field w2">
+            <label>File Pattern (prefix)</label>
+            <input type="text" id="concat-pattern" value="mat2_scene_" placeholder="mat2_scene_">
+            <span class="hint">Prefix before number, e.g. "mat2_scene_" → mat2_scene_1.mp4</span>
+          </div>
+          <div class="field">
+            <label>From #</label>
+            <input type="number" id="concat-start" value="1" min="1">
+          </div>
+          <div class="field">
+            <label>To #</label>
+            <input type="number" id="concat-end" value="6" min="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field toggle-field">
+            <label>Background Music</label>
+            <label class="toggle-line"><input type="checkbox" id="concat-enable-music" checked> Add music track</label>
+            <span class="hint">Turn off to keep original scene audio only</span>
+          </div>
+          <div class="field toggle-field">
+            <label>Subtitles</label>
+            <label class="toggle-line"><input type="checkbox" id="concat-enable-subtitles" checked> Add text overlays</label>
+            <span class="hint">Turn off for clean stitch without text</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Duration (seconds)</label>
+            <input type="number" id="concat-duration" placeholder="auto" min="1" step="1">
+            <span class="hint">Leave empty = auto. Or type: 45, 58, etc.</span>
+          </div>
+          <div class="field w3">
+            <label>⚡ Video Speed</label>
+            <div class="speed-row">
+              <label class="toggle-line"><input type="checkbox" id="concat-speed-on" onchange="toggleSpeed('concat')"> Speed up</label>
+              <div class="speed-slider-wrap">
+                <input type="range" id="concat-speed" min="1" max="2.5" step="0.05" value="1.50" disabled>
+                <span class="speed-val off" id="concat-speed-val">1.00x</span>
+              </div>
+            </div>
+            <span class="hint">Check to enable, drag slider 1.00–2.50×</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Music Category</label>
+            <select id="concat-musiccat"></select>
+          </div>
+          <div class="field">
+            <label>Specific Music File</label>
+            <select id="concat-music">
+              <option value="">Auto (random from category)</option>
+            </select>
+            <span class="hint">Overrides category if selected</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Source Video Dir</label>
+            <input type="text" id="concat-videodir" value="out/renders">
+            <span class="hint">Where the numbered scenes live</span>
+          </div>
+          <div class="field w2">
+            <label>Output File Path</label>
+            <input type="text" id="concat-output" placeholder="out/renders/my_video.mp4">
+            <span class="hint">Where to save the result</span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btn-concat" onclick="runConcat()">🔗 Concatenate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SOURCE FILES (INPUT) ═══════════════ -->
+  <div class="panel" id="panel-sources">
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon green">📥</div>
+        Source Files — INPUT
+        <span class="sh-desc">Your raw materials in assets/</span>
+      </div>
+      <div class="section-body" id="sources-content">
+        <div class="empty-state"><div class="es-icon">⏳</div><div class="es-text">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ OUTPUT FILES ═══════════════ -->
+  <div class="panel" id="panel-output">
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon yellow">📤</div>
+        Output — Generated Videos
+        <span class="sh-desc">Created by the generator in out/</span>
+      </div>
+      <div class="section-body">
+        <div style="margin-bottom:12px;display:flex;gap:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="loadRenders()">↻ Refresh</button>
+        </div>
+        <div class="file-grid" id="renders-grid">
+          <div class="empty-state"><div class="es-icon">📭</div><div class="es-text">No rendered files yet.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DOCTOR ═══════════════ -->
+  <div class="panel" id="panel-doctor">
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon red">🩺</div>
+        System Check
+        <span class="sh-desc">Verify ffmpeg, templates, assets, fonts</span>
+      </div>
+      <div class="section-body">
+        <p style="color:var(--text2);margin-bottom:12px;font-size:13px">
+          Checks that everything is installed &amp; files are in the right places.<br>
+          Run this first if something isn't working.
+        </p>
+        <button class="btn btn-primary" id="btn-doctor" onclick="runDoctor()">🩺 Run Doctor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PROJECT MAP ═══════════════ -->
+  <div class="panel" id="panel-structure">
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon yellow">📂</div>
+        Project Structure — What Goes Where
+      </div>
+      <div class="section-body">
+        <div class="folder-tree" style="line-height:2.2;">
+          <span class="ft-folder">📂 assets/</span> <span class="ft-desc">— all your source files (INPUT)</span><br>
+          <span class="ft-file">&nbsp;&nbsp;📂 loops/</span> <span class="ft-desc">— video loops organized by category</span><br>
+          <span class="ft-file">&nbsp;&nbsp;&nbsp;&nbsp;📂 slime/</span> <span class="ft-desc">— put .mp4 loop files here</span><br>
+          <span class="ft-file">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 mat2_scene_1.mp4, mat2_scene_2.mp4 ...</span><br>
+          <span class="ft-file">&nbsp;&nbsp;📂 music/</span> <span class="ft-desc">— music tracks organized by mood</span><br>
+          <span class="ft-file">&nbsp;&nbsp;&nbsp;&nbsp;📂 ambient/</span> <span class="ft-desc">— calm music</span><br>
+          <span class="ft-file">&nbsp;&nbsp;&nbsp;&nbsp;📂 epic/</span> <span class="ft-desc">— energetic music</span><br>
+          <span class="ft-file">&nbsp;&nbsp;&nbsp;&nbsp;📂 winter/</span> <span class="ft-desc">— seasonal</span><br>
+          <span class="ft-file">&nbsp;&nbsp;📂 fonts/</span> <span class="ft-desc">— custom fonts (Poppins-Bold.ttf)</span><br>
+          <br>
+          <span class="ft-folder">📂 out/</span> <span class="ft-desc">— all generated content (OUTPUT)</span><br>
+          <span class="ft-file">&nbsp;&nbsp;📂 renders/</span> <span class="ft-desc">— final .mp4 videos</span><br>
+          <span class="ft-file">&nbsp;&nbsp;📂 thumbs/</span> <span class="ft-desc">— auto-generated thumbnails .jpg</span><br>
+          <br>
+          <span class="ft-folder">📂 templates/</span> <span class="ft-desc">— JSON configs</span><br>
+          <span class="ft-file">&nbsp;&nbsp;📄 satisfying.json</span> <span class="ft-desc">— main template (duration, category, variants)</span><br>
+          <span class="ft-file">&nbsp;&nbsp;📄 hooks.json</span> <span class="ft-desc">— text overlay phrases</span><br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ CONSOLE ═══ -->
+<div class="console-area">
+  <div class="console-header" onclick="toggleConsole()">
+    <div class="status-dot" id="console-dot"></div>
+    <span id="console-label">Console — Ready</span>
+    <div class="console-actions">
+      <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:10px" onclick="event.stopPropagation();clearConsole()">Clear</button>
+      <span id="console-toggle" style="font-size:10px;color:var(--text3)">▲ expand</span>
+    </div>
+  </div>
+  <div id="console-output"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+// ─── state ──────────────────────────────────────────────────────────────
+let assetsData = null;
+let fontsData = null;
+let isRunning = false;
+let consoleExpanded = false;
+
+// ─── navigation ─────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-item[data-panel]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + el.dataset.panel)?.classList.add('active');
+    if (el.dataset.panel === 'output') loadRenders();
+    if (el.dataset.panel === 'sources') loadAssets().then(() => renderSources());
+  });
+});
+
+// ─── console ────────────────────────────────────────────────────────────
+const con = document.getElementById('console-output');
+const conDot = document.getElementById('console-dot');
+const conLabel = document.getElementById('console-label');
+
+function toggleConsole() {
+  consoleExpanded = !consoleExpanded;
+  con.classList.toggle('expanded', consoleExpanded);
+  document.getElementById('console-toggle').textContent = consoleExpanded ? '▼ collapse' : '▲ expand';
+}
+function expandConsole() { if (!consoleExpanded) toggleConsole(); }
+
+function appendLog(text, cls = '') {
+  const d = document.createElement('div');
+  if (cls) d.className = cls;
+  d.textContent = text;
+  con.appendChild(d);
+  con.scrollTop = con.scrollHeight;
+}
+
+function clearConsole() {
+  con.innerHTML = '';
+  conDot.className = 'status-dot';
+  conLabel.textContent = 'Console — Ready';
+}
+
+function setStatus(state, label) {
+  conDot.className = 'status-dot ' + state;
+  conLabel.textContent = 'Console — ' + label;
+}
+
+function setRunning(val) {
+  isRunning = val;
+  document.querySelectorAll('.btn-primary').forEach(b => b.disabled = val);
+}
+
+function toggleSpeed(prefix) {
+  const on = document.getElementById(prefix + '-speed-on').checked;
+  const slider = document.getElementById(prefix + '-speed');
+  const valEl = document.getElementById(prefix + '-speed-val');
+  slider.disabled = !on;
+  if (on) {
+    valEl.textContent = parseFloat(slider.value).toFixed(2) + 'x';
+    valEl.classList.remove('off');
+  } else {
+    valEl.textContent = '1.00x';
+    valEl.classList.add('off');
+  }
+}
+
+function getSpeed(prefix) {
+  const on = document.getElementById(prefix + '-speed-on').checked;
+  if (!on) return 1;
+  return Math.min(2.5, Math.max(1, parseFloat(document.getElementById(prefix + '-speed').value) || 1));
+}
+
+// live update displayed value while dragging
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'make-speed' || e.target.id === 'concat-speed') {
+    const prefix = e.target.id.replace('-speed', '');
+    const valEl = document.getElementById(prefix + '-speed-val');
+    valEl.textContent = parseFloat(e.target.value).toFixed(2) + 'x';
+  }
+});
+
+// ─── SSE runner ─────────────────────────────────────────────────────────
+function runSSE(url, body) {
+  if (isRunning) return;
+  clearConsole();
+  expandConsole();
+  setRunning(true);
+  setStatus('running', 'Running...');
+
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(response => {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    function read() {
+      reader.read().then(({ done, value }) => {
+        if (done) { setRunning(false); return; }
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() || '';
+        for (const part of parts) {
+          const lines = part.split('\n');
+          let event = 'log', data = '';
+          for (const l of lines) {
+            if (l.startsWith('event: ')) event = l.slice(7);
+            if (l.startsWith('data: ')) data = l.slice(6);
+          }
+          if (event === 'log') {
+            let cls = '';
+            if (data.includes('[OK]') || data.includes('\u2713') || data.includes('Done') || data.includes('successfully')) cls = 'line-ok';
+            else if (data.includes('[X]') || data.includes('[FAIL]') || data.includes('[error]') || data.includes('[stderr]')) cls = 'line-err';
+            else if (data.includes('[warn]') || data.includes('...') || data.startsWith('>')) cls = 'line-info';
+            appendLog(data, cls);
+          } else if (event === 'done') {
+            const code = parseInt(data);
+            if (code === 0) {
+              setStatus('done', 'Completed \u2713');
+              appendLog('\n\u2705 Done!', 'line-ok');
+            } else {
+              setStatus('error', 'Failed (code ' + code + ')');
+              appendLog('\n\u274C Failed with exit code ' + code, 'line-err');
+            }
+            setRunning(false);
+          }
+        }
+        read();
+      });
+    }
+    read();
+  }).catch(err => {
+    appendLog('Connection error: ' + err.message, 'line-err');
+    setStatus('error', 'Error');
+    setRunning(false);
+  });
+}
+
+// ─── Make ───────────────────────────────────────────────────────────────
+function runMake() {
+  runSSE('/api/make', {
+    variants: parseInt(document.getElementById('make-variants').value) || undefined,
+    duration: parseInt(document.getElementById('make-duration').value) || undefined,
+    intensity: document.getElementById('make-intensity').value || undefined,
+    loopCategory: document.getElementById('make-loop').value || undefined,
+    musicCategory: document.getElementById('make-music').value || undefined,
+    template: document.getElementById('make-template').value || undefined,
+    font: document.getElementById('make-font').value || undefined,
+    speed: getSpeed('make'),
+  });
+}
+function quickMake(v, d, i) {
+  document.getElementById('make-variants').value = v;
+  document.getElementById('make-duration').value = d;
+  document.getElementById('make-intensity').value = i;
+  runMake();
+}
+
+// ─── Concat ─────────────────────────────────────────────────────────────
+function runConcat() {
+  const dur = document.getElementById('concat-duration').value;
+  const withMusic = document.getElementById('concat-enable-music').checked;
+  const withSubtitles = document.getElementById('concat-enable-subtitles').checked;
+  runSSE('/api/concat', {
+    pattern: document.getElementById('concat-pattern').value || undefined,
+    start: parseInt(document.getElementById('concat-start').value) || undefined,
+    end: parseInt(document.getElementById('concat-end').value) || undefined,
+    videoDir: document.getElementById('concat-videodir').value || undefined,
+    music: withMusic ? (document.getElementById('concat-music').value || undefined) : undefined,
+    musicCategory: withMusic ? (document.getElementById('concat-musiccat').value || undefined) : undefined,
+    withMusic,
+    withSubtitles,
+    output: document.getElementById('concat-output').value || undefined,
+    duration: dur ? parseInt(dur) : undefined,
+    speed: getSpeed('concat'),
+  });
+}
+
+function updateConcatMusicControls() {
+  const enabled = document.getElementById('concat-enable-music').checked;
+  const musicSel = document.getElementById('concat-music');
+  const catSel = document.getElementById('concat-musiccat');
+  musicSel.disabled = !enabled;
+  catSel.disabled = !enabled;
+}
+
+// ─── Doctor ─────────────────────────────────────────────────────────────
+function runDoctor() { runSSE('/api/doctor', {}); }
+
+// ─── Load Assets ────────────────────────────────────────────────────────
+async function loadAssets() {
+  if (assetsData) return;
+  try {
+    const res = await fetch('/api/assets');
+    assetsData = await res.json();
+    populateSelects();
+    updateBadges();
+  } catch (e) { console.error('Failed to load assets:', e); }
+}
+
+// ─── Load Fonts ─────────────────────────────────────────────────────────
+async function loadFonts() {
+  if (fontsData) return;
+  try {
+    const res = await fetch('/api/fonts');
+    fontsData = await res.json();
+    populateFontSelect();
+  } catch (e) { console.error('Failed to load fonts:', e); }
+}
+
+function populateFontSelect() {
+  if (!fontsData) return;
+  const sel = document.getElementById('make-font');
+  sel.innerHTML = '<option value="">Default (Poppins-Bold)</option>';
+  
+  const fontDescriptions = {
+    'Poppins-Bold.ttf': 'Modern, clean — best for overlays',
+    'Poppins-SemiBold.ttf': 'Slightly lighter Poppins',
+    'Poppins-ExtraBold.ttf': 'Extra thick, high impact',
+    'BebasNeue-Regular.ttf': 'Bold uppercase, cinematic',
+    'Roboto-Bold.ttf': 'Clean, versatile Google font',
+    'Roboto-Regular.ttf': 'Lighter Roboto',
+  };
+  
+  for (const f of fontsData.fonts) {
+    const name = f.replace(/\.(ttf|otf|woff2?)$/i, '');
+    const desc = fontDescriptions[f] || '';
+    const label = desc ? `${name} — ${desc}` : name;
+    sel.innerHTML += `<option value="${f}">${label}</option>`;
+  }
+  
+  sel.addEventListener('change', updateFontPreview);
+}
+
+function updateFontPreview() {
+  const sel = document.getElementById('make-font');
+  const preview = document.getElementById('font-preview');
+  const fontFile = sel.value || 'Poppins-Bold.ttf';
+  const fontName = fontFile.replace(/\.(ttf|otf|woff2?)$/i, '');
+  
+  // Load the font dynamically for preview
+  const fontUrl = `/assets/fonts/${fontFile}`;
+  const fontFace = new FontFace(fontName, `url(${fontUrl})`);
+  fontFace.load().then(f => {
+    document.fonts.add(f);
+    preview.style.fontFamily = `"${fontName}", sans-serif`;
+  }).catch(() => {
+    preview.style.fontFamily = 'inherit';
+  });
+}
+
+function populateSelects() {
+  if (!assetsData) return;
+
+  const loopSel = document.getElementById('make-loop');
+  loopSel.innerHTML = '';
+  for (const cat of assetsData.loopCategories) {
+    const n = assetsData.loops[cat]?.length || 0;
+    loopSel.innerHTML += '<option value="' + cat + '">' + cat + ' \u2014 ' + n + ' file(s)</option>';
+  }
+
+  for (const sel of [document.getElementById('make-music'), document.getElementById('concat-musiccat')]) {
+    sel.innerHTML = '';
+    for (const cat of assetsData.musicCategories) {
+      const n = assetsData.music[cat]?.length || 0;
+      sel.innerHTML += '<option value="' + cat + '">' + cat + ' \u2014 ' + n + ' file(s)</option>';
+    }
+  }
+
+  const concatMusic = document.getElementById('concat-music');
+  concatMusic.innerHTML = '<option value="">Auto (random from category)</option>';
+  for (const cat of assetsData.musicCategories) {
+    for (const f of (assetsData.music[cat] || [])) {
+      const short = cat + '/' + f;
+      concatMusic.innerHTML += '<option value="assets/music/' + short + '">' + short + '</option>';
+    }
+  }
+}
+
+function updateBadges() {
+  if (!assetsData) return;
+  let total = 0;
+  for (const cat of assetsData.loopCategories) total += (assetsData.loops[cat]?.length || 0);
+  for (const cat of assetsData.musicCategories) total += (assetsData.music[cat]?.length || 0);
+  document.getElementById('badge-sources').textContent = total;
+}
+
+function renderSources() {
+  if (!assetsData) return;
+  const el = document.getElementById('sources-content');
+  let h = '';
+
+  // Fonts section
+  if (fontsData && fontsData.fonts.length > 0) {
+    h += '<div class="asset-section"><h3>\uD83D\uDD24 Fonts (assets/fonts/)</h3>';
+    h += '<div class="asset-chips">';
+    for (const f of fontsData.fonts) h += '<span class="asset-chip">' + f + '</span>';
+    h += '</div></div>';
+  }
+
+  h += '<div class="asset-section"><h3>\uD83C\uDFA5 Video Loops (assets/loops/)</h3>';
+  for (const cat of assetsData.loopCategories) {
+    const files = assetsData.loops[cat] || [];
+    h += '<div style="margin-bottom:10px"><span style="font-size:12px;color:var(--yellow);font-weight:600">' + cat + '/</span> <span style="font-size:11px;color:var(--text3)">(' + files.length + ' files)</span></div>';
+    h += '<div class="asset-chips">';
+    for (const f of files) h += '<span class="asset-chip">' + f + '</span>';
+    h += '</div>';
+  }
+  h += '</div>';
+
+  h += '<div class="asset-section" style="margin-top:20px"><h3>\uD83C\uDFB5 Music Tracks (assets/music/)</h3>';
+  for (const cat of assetsData.musicCategories) {
+    const files = assetsData.music[cat] || [];
+    h += '<div style="margin-bottom:10px"><span style="font-size:12px;color:var(--yellow);font-weight:600">' + cat + '/</span> <span style="font-size:11px;color:var(--text3)">(' + files.length + ' files)</span></div>';
+    h += '<div class="asset-chips">';
+    for (const f of files) h += '<span class="asset-chip">' + f + '</span>';
+    h += '</div>';
+  }
+  h += '</div>';
+
+  el.innerHTML = h;
+}
+
+// ─── Load Renders ───────────────────────────────────────────────────────
+async function loadRenders() {
+  try {
+    const res = await fetch('/api/renders');
+    const data = await res.json();
+    const grid = document.getElementById('renders-grid');
+    document.getElementById('badge-output').textContent = data.renders.length;
+
+    if (data.renders.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><div class="es-icon">\uD83D\uDCED</div><div class="es-text">No rendered files yet. Go to Generate Video!</div></div>';
+      return;
+    }
+
+    let html = '';
+    for (const file of data.renders) {
+      const thumbFile = file.replace(/\.(mp4|mov|mkv|webm)$/i, '.jpg');
+      const hasThumb = data.thumbs.includes(thumbFile);
+      html += '<div class="file-card">';
+      if (hasThumb) {
+        html += '<img class="thumb" src="/out/thumbs/' + thumbFile + '" alt="' + file + '" loading="lazy">';
+      } else {
+        html += '<div class="thumb-placeholder">\uD83C\uDFAC</div>';
+      }
+      html += '<div class="fc-info"><div><div class="fc-name" title="' + file + '">' + file + '</div></div><div class="fc-actions"><a href="/out/renders/' + file + '" target="_blank">\u25B6 Play</a> <a href="/out/renders/' + file + '" download>\u2B07 Save</a></div></div></div>';
+    }
+    grid.innerHTML = html;
+  } catch (e) { console.error('Failed to load renders:', e); }
+}
+
+// ─── init ───────────────────────────────────────────────────────────────
+loadAssets();
+loadFonts();
+document.getElementById('concat-enable-music').addEventListener('change', updateConcatMusicControls);
+updateConcatMusicControls();
+</script>
+</body>
+</html>

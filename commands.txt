@@ -1,0 +1,100 @@
+# Satisfying Factory - Command Reference
+
+## Basic Commands
+
+### Generate Videos
+- **Command:** `npm run make -- --variants <number>`
+  - **Description:** Generate multiple video variants.
+  - **Example:** `npm run make -- --variants 3`
+
+### Set Video Duration
+- **Command:** `npm run make -- --duration <seconds>`
+  - **Description:** Set the duration of the generated videos.
+  - **Example:** `npm run make -- --duration 40`
+
+### Combine Variants and Duration
+- **Command:** `npm run make -- --variants <number> --duration <seconds>`
+  - **Description:** Generate multiple video variants with a specific duration.
+  - **Example:** `npm run make -- --variants 3 --duration 20`
+
+## Advanced Commands
+
+### Set Intensity
+- **Command:** `npm run make -- --intensity <low|medium|high>`
+  - **Description:** Set the intensity of the video effects.
+  - **Example:** `npm run make -- --intensity high`
+
+### Specify Loop and Music Categories
+- **Command:** `npm run make -- --loop <category> --music <category>`
+  - **Description:** Specify the loop and music categories for the video.
+  - **Example:** `npm run make -- --loop slime --music ambient`
+
+### Use a Custom Template
+- **Command:** `npm run make -- --template <path>`
+  - **Description:** Use a custom JSON template for video generation.
+  - **Example:** `npm run make -- --template templates/custom.json`
+
+### Set Output Directory
+- **Command:** `npm run make -- --output <path>`
+  - **Description:** Specify the output directory for generated videos and thumbnails.
+  - **Example:** `npm run make -- --output out/custom`
+
+## Video Concatenation
+
+### Concatenate Videos Sequentially
+- **Command:** `npm run concat -- --pattern <prefix> --start <number> --end <number>`
+  - **Description:** Concatenate multiple videos in sequential order with music and text overlays.
+  - **Example:** `npm run concat -- --pattern mat2_scene_ --start 1 --end 6`
+  - **Default Pattern:** `mat2_scene_`
+  - **Default Range:** 1-6
+  - **Note:** Videos should be in `out/renders/` directory
+
+### Specify Music for Concatenation
+- **Command:** `npm run concat -- --music <path>`
+  - **Description:** Use a specific music file for the concatenated video.
+  - **Example:** `npm run concat -- --music assets/music/ambient/track1.mp3`
+
+### Set Music Category for Concatenation
+- **Command:** `npm run concat -- --musicCategory <category>`
+  - **Description:** Select music from a specific category (random selection).
+  - **Example:** `npm run concat -- --musicCategory ambient`
+  - **Default:** `ambient`
+
+### Specify Video Directory
+- **Command:** `npm run concat -- --videoDir <path>`
+  - **Description:** Directory where source videos are located.
+  - **Example:** `npm run concat -- --videoDir out/renders`
+  - **Default:** `out/renders`
+
+### Set Output File
+- **Command:** `npm run concat -- --output <path>`
+  - **Description:** Specify the output file path for concatenated video.
+  - **Example:** `npm run concat -- --output out/final/my_video.mp4`
+
+## Debugging and Logs
+
+### Enable Debug Mode
+- **Command:** `npm run make -- --debug`
+  - **Description:** Enable debug mode to display detailed logs during video generation.
+  - **Example:** `npm run make -- --debug`
+
+### View Help
+- **Command:** `npm run make -- --help`
+  - **Description:** Display help information about available commands.
+  - **Example:** `npm run make -- --help`
+
+## Notes
+- Replace `<number>`, `<seconds>`, `<low|medium|high>`, `<category>`, and `<path>` with your desired values.
+- Combine multiple options to customize your video generation process.
+
+For more details, refer to the project documentation or contact support.
+
+
+npm run concat -- --start 1 --end 7 --pattern "mat2_scene_" --music "assets/music/epic/epic_01.mp3" --output "out/renders/epic_video.mp4"
+npm run concat -- --start 1 --end 7 --pattern "mat2_scene_" --music "assets/music/winter/winter_01.mp3" --output "out/renders/winter_video.mp4"
+npm run concat -- --start 1 --end 7 --pattern "mat2_scene_" --music "assets/music/winter/winter_01.mp3" --output "out/renders/tiktok_winter_20s.mp4" --duration 20
+
+npm run concat -- --start 1 --end 6 --pattern "mat2_scene_" --music "assets/music/epic/epic_01.mp3" --output "out/renders/epic_video_58s.mp4" --duration 58
+
+
+npm run concat -- --start 1 --end 6 --pattern "mat2_scene_" --music "assets/music/winter/winter_01.mp3" --output "out/renders/epic_video_58s.mp4" --duration 58
