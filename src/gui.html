@@ -284,6 +284,173 @@ input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var
   color:var(--accent); min-width:48px; text-align:center;
 }
 .speed-val.off { color:var(--text3); }
+
+/* ── video editor ── */
+.editor-drop-zone {
+  border:2px dashed var(--border-light);
+  border-radius:12px;
+  padding:40px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  color:var(--text3);
+  background:var(--surface2);
+}
+.editor-drop-zone:hover, .editor-drop-zone.drag-over {
+  border-color:var(--accent);
+  background:var(--accent-dim);
+  color:var(--accent);
+}
+.editor-drop-zone .drop-icon { font-size:36px; margin-bottom:8px; }
+.editor-drop-zone .drop-text { font-size:14px; }
+.editor-drop-zone .drop-hint { font-size:11px; color:var(--text3); margin-top:4px; }
+.editor-drop-zone input[type="file"] { display:none; }
+
+.editor-workspace { display:none; }
+.editor-workspace.visible { display:block; }
+
+.editor-video-wrap {
+  position:relative;
+  background:#000;
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:16px;
+  max-height:420px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.editor-video-wrap video {
+  width:100%;
+  max-height:420px;
+  display:block;
+  object-fit:contain;
+  background:#000;
+}
+
+.editor-controls {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.editor-controls .btn-icon {
+  width:36px; height:36px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  font-size:16px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s;
+}
+.editor-controls .btn-icon:hover { background:var(--accent-dim); border-color:var(--accent); }
+.editor-controls .btn-icon.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.editor-time {
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text2);
+}
+.editor-time .current { color:#fff; font-weight:600; }
+.editor-filename {
+  margin-left:auto;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text3);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  max-width:200px;
+}
+
+/* timeline */
+.editor-timeline {
+  position:relative;
+  height:56px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:16px;
+  user-select:none;
+  overflow:hidden;
+}
+.editor-timeline .tl-track {
+  position:absolute;
+  top:0; left:0; right:0; bottom:0;
+}
+.editor-timeline .tl-progress {
+  position:absolute;
+  top:0; bottom:0;
+  width:2px;
+  background:var(--accent);
+  z-index:5;
+  pointer-events:none;
+}
+.editor-timeline .tl-selected {
+  position:absolute;
+  top:0; bottom:0;
+  background:rgba(124,92,252,0.15);
+  border-left:3px solid var(--accent);
+  border-right:3px solid var(--accent);
+  z-index:2;
+}
+.editor-timeline .tl-handle {
+  position:absolute;
+  top:0; bottom:0;
+  width:14px;
+  cursor:ew-resize;
+  z-index:10;
+  display:flex; align-items:center; justify-content:center;
+}
+.editor-timeline .tl-handle::after {
+  content:'';
+  width:4px; height:24px;
+  border-radius:2px;
+  background:var(--accent);
+  box-shadow:0 0 6px var(--accent-glow);
+}
+.editor-timeline .tl-handle:hover::after { background:var(--accent-hover); width:5px; }
+.editor-timeline .tl-handle-start { left:0; }
+.editor-timeline .tl-handle-end { right:0; }
+.editor-timeline .tl-ticks {
+  position:absolute;
+  top:0; left:0; right:0; bottom:0;
+  z-index:1;
+  pointer-events:none;
+}
+.editor-timeline .tl-tick {
+  position:absolute;
+  top:0;
+  width:1px;
+  height:100%;
+  background:var(--border);
+}
+.editor-timeline .tl-tick-label {
+  position:absolute;
+  top:2px;
+  font-size:9px;
+  color:var(--text3);
+  font-family:var(--mono);
+  transform:translateX(-50%);
+}
+
+.editor-trim-info {
+  display:flex;
+  gap:16px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.editor-trim-info .trim-field {
+  display:flex; flex-direction:column; gap:2px;
+}
+.editor-trim-info .trim-field label {
+  font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;
+}
+.editor-trim-info .trim-field .trim-val {
+  font-family:var(--mono); font-size:15px; color:var(--accent); font-weight:600;
+}
+.editor-trim-info .trim-field .trim-val.duration { color:var(--green); }
 </style>
 </head>
 <body>
@@ -303,6 +470,9 @@ input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var
   </div>
   <div class="nav-item" data-panel="concat">
     <span class="icon">🔗</span> Concat / Stitch
+  </div>
+  <div class="nav-item" data-panel="editor">
+    <span class="icon">✂️</span> Video Editor
   </div>
 
   <div class="nav-section">Files</div>
@@ -427,6 +597,13 @@ input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var
             </select>
             <span class="hint">🔤 From: assets/fonts/</span>
           </div>
+          <div class="field">
+            <label>Hooks Template</label>
+            <select id="make-hooks">
+              <option value="">Default (hooks.json)</option>
+            </select>
+            <span class="hint">💬 Text phrases style</span>
+          </div>
           <div class="field w2" id="font-preview-wrap">
             <label>Font Preview</label>
             <div id="font-preview" style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:20px;color:white;min-height:44px;display:flex;align-items:center">
@@ -465,6 +642,92 @@ input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var
           <span class="ft-folder">📤 out/renders/</span> <span class="ft-desc">← generated videos go here (OUTPUT)</span><br>
           <span class="ft-folder">📤 out/thumbs/</span> <span class="ft-desc">← thumbnails go here (OUTPUT)</span><br>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VIDEO EDITOR ═══════════════ -->
+  <div class="panel" id="panel-editor">
+
+    <div class="section-box">
+      <div class="section-header">
+        <div class="sh-icon purple">✂️</div>
+        Video Editor — Trim &amp; Cut
+        <span class="sh-desc">Load a video, select range, export trimmed clip</span>
+      </div>
+      <div class="section-body">
+
+        <!-- drop zone -->
+        <div class="editor-drop-zone" id="editor-drop-zone">
+          <div class="drop-icon">📂</div>
+          <div class="drop-text">Drag &amp; drop a video file here, or click to browse</div>
+          <div class="drop-hint">Supports .mp4, .mov, .mkv, .webm</div>
+          <input type="file" id="editor-file-input" accept="video/*">
+        </div>
+
+        <!-- editor workspace (hidden until video loaded) -->
+        <div class="editor-workspace" id="editor-workspace">
+
+          <!-- video player -->
+          <div class="editor-video-wrap">
+            <video id="editor-video" preload="metadata"></video>
+          </div>
+
+          <!-- playback controls -->
+          <div class="editor-controls">
+            <button class="btn-icon" id="editor-play" title="Play / Pause">▶</button>
+            <button class="btn-icon" id="editor-goto-start" title="Go to trim start">⏮</button>
+            <button class="btn-icon" id="editor-goto-end" title="Go to trim end">⏭</button>
+            <div class="editor-time">
+              <span class="current" id="editor-current-time">00:00.0</span>
+              <span>/</span>
+              <span id="editor-total-time">00:00.0</span>
+            </div>
+            <span class="editor-filename" id="editor-filename"></span>
+          </div>
+
+          <!-- timeline with trim handles -->
+          <div class="editor-timeline" id="editor-timeline">
+            <div class="tl-ticks" id="editor-ticks"></div>
+            <div class="tl-selected" id="editor-selected"></div>
+            <div class="tl-handle tl-handle-start" id="editor-handle-start"></div>
+            <div class="tl-handle tl-handle-end" id="editor-handle-end"></div>
+            <div class="tl-progress" id="editor-progress"></div>
+          </div>
+
+          <!-- trim info -->
+          <div class="editor-trim-info">
+            <div class="trim-field">
+              <label>Trim Start</label>
+              <span class="trim-val" id="editor-trim-start">00:00.0</span>
+            </div>
+            <div class="trim-field">
+              <label>Trim End</label>
+              <span class="trim-val" id="editor-trim-end">00:00.0</span>
+            </div>
+            <div class="trim-field">
+              <label>Duration</label>
+              <span class="trim-val duration" id="editor-trim-duration">00:00.0</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field w2">
+              <label>Output File Name</label>
+              <input type="text" id="editor-output-name" placeholder="trimmed_video.mp4">
+              <span class="hint">Saved to out/renders/</span>
+            </div>
+          </div>
+
+          <div class="btn-row" style="gap:8px">
+            <button class="btn btn-primary" id="btn-editor-export" onclick="editorExport()">✂️ Apply Trim</button>
+            <button class="btn btn-primary" id="btn-editor-download" onclick="editorDownload()" style="background:linear-gradient(135deg,var(--green),#2ab870);box-shadow:0 2px 12px var(--green-dim)" disabled>⬇️ Download</button>
+            <button class="btn btn-secondary" onclick="editorReset()">🔄 Load Another</button>
+          </div>
+          <div id="editor-status" style="margin-top:10px;font-size:12px;color:var(--text3);display:none"></div>
+
+        </div>
+
       </div>
     </div>
   </div>
@@ -819,6 +1082,7 @@ function runMake() {
     musicCategory: document.getElementById('make-music').value || undefined,
     template: document.getElementById('make-template').value || undefined,
     font: document.getElementById('make-font').value || undefined,
+    hooks: document.getElementById('make-hooks').value || undefined,
     speed: getSpeed('make'),
   });
 }
@@ -869,6 +1133,21 @@ async function loadAssets() {
     populateSelects();
     updateBadges();
   } catch (e) { console.error('Failed to load assets:', e); }
+}
+
+// ─── Load Hooks Templates ───────────────────────────────────────────────
+async function loadHooksTemplates() {
+  try {
+    const res = await fetch('/api/hooks-list');
+    const data = await res.json();
+    const sel = document.getElementById('make-hooks');
+    sel.innerHTML = '<option value="">Default (hooks.json)</option>';
+    for (const f of data.files) {
+      if (f === 'hooks.json') continue; // already the default
+      const name = f.replace(/\.json$/, '');
+      sel.innerHTML += '<option value="templates/' + f + '">' + name + '</option>';
+    }
+  } catch (e) { console.error('Failed to load hooks templates:', e); }
 }
 
 // ─── Load Fonts ─────────────────────────────────────────────────────────
@@ -1023,9 +1302,364 @@ async function loadRenders() {
   } catch (e) { console.error('Failed to load renders:', e); }
 }
 
+// ─── Video Editor ───────────────────────────────────────────────────────
+const editorState = {
+  file: null,        // File object (from drop/browse) or null
+  filePath: null,    // server-side path (from /api/upload-video)
+  objectUrl: null,
+  duration: 0,
+  trimStart: 0,
+  trimEnd: 0,
+  dragging: null,    // 'start' | 'end' | 'seek' | null
+  lastOutputName: null,  // last exported file name
+};
+
+const edVideo = () => document.getElementById('editor-video');
+const edTimeline = () => document.getElementById('editor-timeline');
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s - m * 60;
+  return String(m).padStart(2,'0') + ':' + sec.toFixed(1).padStart(4,'0');
+}
+
+function editorUpdateUI() {
+  const { trimStart, trimEnd, duration } = editorState;
+  document.getElementById('editor-trim-start').textContent = fmtTime(trimStart);
+  document.getElementById('editor-trim-end').textContent = fmtTime(trimEnd);
+  document.getElementById('editor-trim-duration').textContent = fmtTime(Math.max(0, trimEnd - trimStart));
+
+  // update selected region + handles
+  const tl = edTimeline();
+  if (!tl || !duration) return;
+  const w = tl.clientWidth;
+  const startPx = (trimStart / duration) * w;
+  const endPx = (trimEnd / duration) * w;
+  document.getElementById('editor-selected').style.left = startPx + 'px';
+  document.getElementById('editor-selected').style.width = Math.max(0, endPx - startPx) + 'px';
+  document.getElementById('editor-handle-start').style.left = (startPx - 7) + 'px';
+  document.getElementById('editor-handle-end').style.left = (endPx - 7) + 'px';
+}
+
+function editorUpdateProgress() {
+  const video = edVideo();
+  if (!video || !editorState.duration) return;
+  const pct = video.currentTime / editorState.duration;
+  const tl = edTimeline();
+  if (tl) {
+    document.getElementById('editor-progress').style.left = (pct * tl.clientWidth) + 'px';
+  }
+  document.getElementById('editor-current-time').textContent = fmtTime(video.currentTime);
+}
+
+function editorBuildTicks() {
+  const dur = editorState.duration;
+  if (!dur) return;
+  const container = document.getElementById('editor-ticks');
+  container.innerHTML = '';
+  // tick every 5s, or every 1s if short
+  const step = dur > 60 ? 10 : dur > 20 ? 5 : 1;
+  for (let t = 0; t <= dur; t += step) {
+    const pct = (t / dur) * 100;
+    const tick = document.createElement('div');
+    tick.className = 'tl-tick';
+    tick.style.left = pct + '%';
+    container.appendChild(tick);
+    if (t > 0 && t < dur) {
+      const lbl = document.createElement('div');
+      lbl.className = 'tl-tick-label';
+      lbl.style.left = pct + '%';
+      lbl.textContent = fmtTime(t);
+      container.appendChild(lbl);
+    }
+  }
+}
+
+function editorLoadVideo(file) {
+  // revoke old url
+  if (editorState.objectUrl) URL.revokeObjectURL(editorState.objectUrl);
+
+  editorState.file = file;
+  editorState.objectUrl = URL.createObjectURL(file);
+  editorState.filePath = null;
+
+  const video = edVideo();
+  video.src = editorState.objectUrl;
+
+  document.getElementById('editor-filename').textContent = file.name;
+  document.getElementById('editor-output-name').value = 'trimmed_' + file.name.replace(/\.[^.]+$/, '') + '.mp4';
+
+  video.addEventListener('loadedmetadata', function onMeta() {
+    video.removeEventListener('loadedmetadata', onMeta);
+    editorState.duration = video.duration;
+    editorState.trimStart = 0;
+    editorState.trimEnd = video.duration;
+    document.getElementById('editor-total-time').textContent = fmtTime(video.duration);
+    editorBuildTicks();
+    editorUpdateUI();
+  });
+
+  // upload to server for ffmpeg processing
+  editorUploadFile(file);
+
+  document.getElementById('editor-drop-zone').style.display = 'none';
+  document.getElementById('editor-workspace').classList.add('visible');
+}
+
+async function editorUploadFile(file) {
+  const formData = new FormData();
+  formData.append('video', file);
+  try {
+    const res = await fetch('/api/upload-video', { method: 'POST', body: formData });
+    const data = await res.json();
+    editorState.filePath = data.path;
+  } catch(e) {
+    appendLog('Editor: upload failed — ' + e.message, 'line-err');
+  }
+}
+
+function editorReset() {
+  const video = edVideo();
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+  if (editorState.objectUrl) URL.revokeObjectURL(editorState.objectUrl);
+  editorState.file = null;
+  editorState.filePath = null;
+  editorState.objectUrl = null;
+  editorState.duration = 0;
+  editorState.trimStart = 0;
+  editorState.trimEnd = 0;
+  editorState.lastOutputName = null;
+  document.getElementById('editor-play').textContent = '▶';
+  document.getElementById('btn-editor-download').disabled = true;
+  document.getElementById('editor-status').style.display = 'none';
+  document.getElementById('editor-drop-zone').style.display = '';
+  document.getElementById('editor-workspace').classList.remove('visible');
+}
+
+function editorExport() {
+  if (!editorState.filePath) {
+    expandConsole();
+    appendLog('Editor: video not yet uploaded to server, please wait...', 'line-err');
+    return;
+  }
+  const outputName = document.getElementById('editor-output-name').value.trim() || 'trimmed_output.mp4';
+  editorState.lastOutputName = outputName;
+
+  // Disable button, show status
+  const btn = document.getElementById('btn-editor-export');
+  btn.disabled = true;
+  btn.textContent = '⏳ Trimming...';
+  const dlBtn = document.getElementById('btn-editor-download');
+  dlBtn.disabled = true;
+  const statusEl = document.getElementById('editor-status');
+  statusEl.style.display = 'block';
+  statusEl.textContent = '⏳ Processing trim with ffmpeg...';
+  statusEl.style.color = 'var(--yellow)';
+
+  editorRunTrim({
+    input: editorState.filePath,
+    start: editorState.trimStart,
+    end: editorState.trimEnd,
+    output: outputName,
+  }).then(code => {
+    btn.disabled = false;
+    btn.textContent = '✂️ Apply Trim';
+    if (code === 0) {
+      statusEl.textContent = '✅ Trim complete! Click Download to save.';
+      statusEl.style.color = 'var(--green)';
+      dlBtn.disabled = false;
+    } else {
+      statusEl.textContent = '❌ Trim failed — check console';
+      statusEl.style.color = 'var(--red)';
+    }
+  });
+}
+
+function editorRunTrim(body) {
+  return new Promise((resolve) => {
+    expandConsole();
+    clearConsole();
+    setRunning(true);
+    setStatus('running', 'Trimming...');
+
+    fetch('/api/trim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).then(response => {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      function read() {
+        reader.read().then(({ done, value }) => {
+          if (done) { setRunning(false); resolve(1); return; }
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop() || '';
+          for (const part of parts) {
+            const lines = part.split('\n');
+            let event = 'log', data = '';
+            for (const l of lines) {
+              if (l.startsWith('event: ')) event = l.slice(7);
+              if (l.startsWith('data: ')) data = l.slice(6);
+            }
+            if (event === 'log') {
+              let cls = '';
+              if (data.includes('[OK]') || data.includes('✅') || data.includes('Done')) cls = 'line-ok';
+              else if (data.includes('[error]') || data.includes('[stderr]')) cls = 'line-err';
+              appendLog(data, cls);
+            } else if (event === 'done') {
+              const code = parseInt(data);
+              if (code === 0) {
+                setStatus('done', 'Trim Completed ✓');
+                appendLog('\n✅ Trim done!', 'line-ok');
+              } else {
+                setStatus('error', 'Failed (code ' + code + ')');
+                appendLog('\n❌ Failed with code ' + code, 'line-err');
+              }
+              setRunning(false);
+              resolve(code);
+              return;
+            }
+          }
+          read();
+        });
+      }
+      read();
+    }).catch(err => {
+      appendLog('Connection error: ' + err.message, 'line-err');
+      setStatus('error', 'Error');
+      setRunning(false);
+      resolve(1);
+    });
+  });
+}
+
+function editorDownload() {
+  const name = editorState.lastOutputName || 'trimmed_output.mp4';
+  // Use dedicated download endpoint which sets Content-Disposition: attachment
+  // so the browser always saves the file instead of opening it in a tab
+  window.location.href = '/api/download?file=' + encodeURIComponent(name);
+}
+
+// ── drop zone setup ──
+(function() {
+  const dz = document.getElementById('editor-drop-zone');
+  const fi = document.getElementById('editor-file-input');
+
+  dz.addEventListener('click', () => fi.click());
+  fi.addEventListener('change', () => {
+    if (fi.files.length) editorLoadVideo(fi.files[0]);
+  });
+
+  dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) editorLoadVideo(file);
+  });
+})();
+
+// ── playback controls ──
+document.getElementById('editor-play').addEventListener('click', () => {
+  const video = edVideo();
+  if (video.paused) {
+    // if current time is outside trim range, jump to start
+    if (video.currentTime < editorState.trimStart || video.currentTime >= editorState.trimEnd) {
+      video.currentTime = editorState.trimStart;
+    }
+    video.play();
+    document.getElementById('editor-play').textContent = '⏸';
+  } else {
+    video.pause();
+    document.getElementById('editor-play').textContent = '▶';
+  }
+});
+
+document.getElementById('editor-goto-start').addEventListener('click', () => {
+  edVideo().currentTime = editorState.trimStart;
+  editorUpdateProgress();
+});
+
+document.getElementById('editor-goto-end').addEventListener('click', () => {
+  edVideo().currentTime = editorState.trimEnd;
+  editorUpdateProgress();
+});
+
+// pause at trim end
+edVideo().addEventListener('timeupdate', () => {
+  editorUpdateProgress();
+  const video = edVideo();
+  if (!video.paused && video.currentTime >= editorState.trimEnd) {
+    video.pause();
+    video.currentTime = editorState.trimEnd;
+    document.getElementById('editor-play').textContent = '▶';
+  }
+});
+
+edVideo().addEventListener('pause', () => {
+  document.getElementById('editor-play').textContent = '▶';
+});
+edVideo().addEventListener('play', () => {
+  document.getElementById('editor-play').textContent = '⏸';
+});
+
+// ── timeline drag (trim handles + seek) ──
+(function() {
+  const tl = edTimeline();
+  const hStart = document.getElementById('editor-handle-start');
+  const hEnd = document.getElementById('editor-handle-end');
+
+  function timeFromX(clientX) {
+    const rect = tl.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return pct * editorState.duration;
+  }
+
+  hStart.addEventListener('mousedown', (e) => { e.stopPropagation(); editorState.dragging = 'start'; });
+  hEnd.addEventListener('mousedown', (e) => { e.stopPropagation(); editorState.dragging = 'end'; });
+  tl.addEventListener('mousedown', (e) => {
+    if (editorState.dragging) return;
+    // click on track = seek
+    const t = timeFromX(e.clientX);
+    edVideo().currentTime = t;
+    editorUpdateProgress();
+    editorState.dragging = 'seek';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!editorState.dragging || !editorState.duration) return;
+    const t = timeFromX(e.clientX);
+    if (editorState.dragging === 'start') {
+      editorState.trimStart = Math.max(0, Math.min(t, editorState.trimEnd - 0.1));
+      edVideo().currentTime = editorState.trimStart;
+      editorUpdateUI();
+      editorUpdateProgress();
+    } else if (editorState.dragging === 'end') {
+      editorState.trimEnd = Math.min(editorState.duration, Math.max(t, editorState.trimStart + 0.1));
+      edVideo().currentTime = editorState.trimEnd;
+      editorUpdateUI();
+      editorUpdateProgress();
+    } else if (editorState.dragging === 'seek') {
+      edVideo().currentTime = Math.max(0, Math.min(editorState.duration, t));
+      editorUpdateProgress();
+    }
+  });
+
+  document.addEventListener('mouseup', () => { editorState.dragging = null; });
+
+  // resize handler
+  window.addEventListener('resize', () => { if (editorState.duration) editorUpdateUI(); });
+})();
+
 // ─── init ───────────────────────────────────────────────────────────────
 loadAssets();
 loadFonts();
+loadHooksTemplates();
 document.getElementById('concat-enable-music').addEventListener('change', updateConcatMusicControls);
 updateConcatMusicControls();
 </script>

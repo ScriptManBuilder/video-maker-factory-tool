@@ -77,6 +77,12 @@ const VIDEO_EXTS = [".mp4", ".mov", ".mkv", ".webm"];
 const AUDIO_EXTS = [".mp3", ".wav", ".m4a", ".aac"];
 const FONT_EXTS = [".ttf", ".otf", ".woff", ".woff2"];
 
+function fmtSec(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = (s - m * 60).toFixed(1);
+  return `${String(m).padStart(2, "0")}:${sec.padStart(4, "0")}`;
+}
+
 /** Run an npm script with args, streaming output via SSE */
 function runJob(
   res: http.ServerResponse,
@@ -210,6 +216,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     if (body.musicCategory) args.push("--musicCategory", body.musicCategory);
     if (body.template) args.push("--template", body.template);
     if (body.font) args.push("--font", body.font);
+    if (body.hooks) args.push("--hooks", body.hooks);
     args.push("--speed", String(body.speed ?? 1));
     runJob(res, "make", args);
     return;
@@ -240,6 +247,135 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     return;
   }
 
+  // ── API: upload video for editor ──
+  if (url.pathname === "/api/upload-video" && method === "POST") {
+    const uploadDir = path.resolve(ROOT, "out/.editor-tmp");
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk: Buffer) => chunks.push(chunk));
+    req.on("end", () => {
+      const raw = Buffer.concat(chunks);
+      // Parse multipart boundary
+      const contentType = req.headers["content-type"] || "";
+      const boundaryMatch = contentType.match(/boundary=(.+)/);
+      if (!boundaryMatch) {
+        json(res, { error: "No multipart boundary" }, 400);
+        return;
+      }
+      const boundary = boundaryMatch[1];
+      const boundaryBuf = Buffer.from(`--${boundary}`);
+
+      // Find filename from Content-Disposition
+      const headerEnd = raw.indexOf(Buffer.from("\r\n\r\n"));
+      if (headerEnd === -1) {
+        json(res, { error: "Invalid multipart" }, 400);
+        return;
+      }
+      const headerStr = raw.subarray(0, headerEnd).toString();
+      const fnMatch = headerStr.match(/filename="([^"]+)"/);
+      const origName = fnMatch ? fnMatch[1].replace(/[^a-zA-Z0-9._-]/g, "_") : "upload.mp4";
+      const safeName = `ed_${Date.now()}_${origName}`;
+
+      // Extract file body (between first header-end and closing boundary)
+      const bodyStart = headerEnd + 4; // skip \r\n\r\n
+      const closingBoundary = Buffer.from(`\r\n--${boundary}`);
+      let bodyEnd = raw.length;
+      const closingIdx = raw.indexOf(closingBoundary, bodyStart);
+      if (closingIdx !== -1) bodyEnd = closingIdx;
+
+      const fileData = raw.subarray(bodyStart, bodyEnd);
+      const filePath = path.join(uploadDir, safeName);
+      fs.writeFileSync(filePath, fileData);
+
+      json(res, { path: `out/.editor-tmp/${safeName}`, name: safeName });
+    });
+    return;
+  }
+
+  // ── API: trim video ──
+  if (url.pathname === "/api/trim" && method === "POST") {
+    const body = JSON.parse(await parseBody(req));
+    const inputPath = path.resolve(ROOT, body.input);
+    const outputDir = path.resolve(ROOT, "out/renders");
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+    const outputName = (body.output || "trimmed_output.mp4").replace(/[^a-zA-Z0-9._-]/g, "_");
+    const outputPath = path.resolve(outputDir, outputName);
+    const startSec = parseFloat(body.start) || 0;
+    const endSec = parseFloat(body.end) || 0;
+    const duration = endSec - startSec;
+
+    if (duration <= 0) {
+      json(res, { error: "Invalid trim range" }, 400);
+      return;
+    }
+
+    // Validate the input path stays within ROOT
+    if (!inputPath.startsWith(path.resolve(ROOT))) {
+      json(res, { error: "Invalid input path" }, 400);
+      return;
+    }
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
+
+    const send = (event: string, data: string) => {
+      res.write(`event: ${event}\ndata: ${data}\n\n`);
+    };
+
+    send("log", `Trimming: ${fmtSec(startSec)} → ${fmtSec(endSec)} (${fmtSec(duration)})`);
+    send("log", `Input: ${body.input}`);
+    send("log", `Output: out/renders/${outputName}`);
+    send("log", `> ffmpeg -i "..." -ss ${startSec} -to ${endSec} -c:v libx264 -preset ultrafast "..."`);
+
+    const ffArgs = [
+      "-y",
+      "-i", inputPath,         // input first
+      "-ss", String(startSec), // seek AFTER input = frame-accurate
+      "-to", String(endSec),   // absolute end timestamp
+      "-c:v", "libx264",       // re-encode for frame accuracy
+      "-c:a", "aac",
+      "-preset", "ultrafast",   // fast encoding
+      "-movflags", "+faststart",
+      outputPath,
+    ];
+
+    const child = spawn("ffmpeg", ffArgs, {
+      cwd: ROOT,
+      shell: true,
+    });
+
+    child.stderr?.on("data", (chunk: Buffer) => {
+      const lines = chunk.toString().split("\n");
+      for (const line of lines) {
+        if (line.trim()) send("log", line.trim());
+      }
+    });
+
+    child.on("close", (code) => {
+      if (code === 0) {
+        send("log", `\n✅ Trimmed video saved: out/renders/${outputName}`);
+      }
+      send("done", String(code ?? 0));
+      res.end();
+    });
+
+    child.on("error", (err) => {
+      send("log", `[error] ${err.message}`);
+      send("done", "1");
+      res.end();
+    });
+
+    res.on("close", () => {
+      try { child.kill(); } catch {}
+    });
+    return;
+  }
+
   // ── API: templates ──
   if (url.pathname === "/api/templates" && method === "GET") {
     const files = listFilesIn("templates", [".json"]);
@@ -255,13 +391,49 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     return;
   }
 
+  // ── API: list hooks templates ──
+  if (url.pathname === "/api/hooks-list" && method === "GET") {
+    const all = listFilesIn("templates", [".json"]);
+    const hooks = all.filter((f) => f.startsWith("hooks"));
+    json(res, { files: hooks });
+    return;
+  }
+
+  // ── API: force-download a rendered file ──
+  if (url.pathname === "/api/download" && method === "GET") {
+    const fileParam = url.searchParams.get("file");
+    if (!fileParam) { text(res, "missing file param", 400); return; }
+    const safeName = path.basename(fileParam);
+    const filePath = path.resolve(ROOT, "out", "renders", safeName);
+    if (!filePath.startsWith(path.resolve(ROOT, "out", "renders"))) {
+      text(res, "forbidden", 403); return;
+    }
+    if (!fs.existsSync(filePath)) { text(res, "not found", 404); return; }
+    const ext = path.extname(filePath).toLowerCase();
+    const mime: Record<string, string> = {
+      ".mp4": "video/mp4", ".mov": "video/quicktime",
+      ".mkv": "video/x-matroska", ".webm": "video/webm",
+    };
+    res.writeHead(200, {
+      "Content-Type": mime[ext] ?? "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${safeName}"`,
+    });
+    fs.createReadStream(filePath).pipe(res);
+    return;
+  }
+
   // ── static: serve out/ files for preview ──
   if (url.pathname.startsWith("/out/") && method === "GET") {
     const filePath = path.resolve(ROOT, url.pathname.slice(1));
+    // Validate path stays within ROOT
+    if (!filePath.startsWith(path.resolve(ROOT))) { text(res, "forbidden", 403); return; }
     if (!fs.existsSync(filePath)) { text(res, "not found", 404); return; }
     const ext = path.extname(filePath).toLowerCase();
     const mime: Record<string, string> = {
       ".mp4": "video/mp4",
+      ".mov": "video/quicktime",
+      ".mkv": "video/x-matroska",
+      ".webm": "video/webm",
       ".jpg": "image/jpeg",
       ".jpeg": "image/jpeg",
       ".png": "image/png",

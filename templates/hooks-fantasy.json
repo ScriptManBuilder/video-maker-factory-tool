@@ -1,0 +1,211 @@
+{
+  "version": 2,
+  "description": "Fantasy/portal themed hook phrases for mystical forest & adventure videos.",
+
+  "openers": [
+    "the cat found something strange...",
+    "the frog noticed it first...",
+    "this portal should not exist",
+    "something is glowing in the forest",
+    "the cat wasnt supposed to see this",
+    "the frog heard something...",
+    "deep in the forest...",
+    "they followed the light",
+    "this changed everything",
+    "the portal just appeared",
+    "the forest is hiding something",
+    "they should turn back...",
+    "this wasnt part of the plan",
+    "what did the frog just find?",
+    "the cat feels something strange",
+    "the forest is waking up",
+    "they are not alone here",
+    "the portal is opening",
+    "this place feels different",
+    "something is calling them"
+  ],
+
+  "buildup": [
+    "the light is getting stronger",
+    "the portal is reacting",
+    "the forest is changing",
+    "did you see that?",
+    "the ground is shaking",
+    "the portal is forming",
+    "something is coming",
+    "the energy is building",
+    "its getting brighter",
+    "the magic is waking up",
+    "the tree is alive",
+    "look at the roots",
+    "the portal is pulling them",
+    "something is inside",
+    "the air feels different",
+    "the light is moving",
+    "the frog senses danger",
+    "the cat is curious",
+    "the forest is watching",
+    "the portal is almost open"
+  ],
+
+  "peak": [
+    "THE PORTAL OPENED",
+    "MAGIC UNLOCKED",
+    "THE FOREST AWAKES",
+    "THE TREE IS ALIVE",
+    "THE PORTAL IS REAL",
+    "THIS IS MAGIC",
+    "THE SECRET REVEALED",
+    "THE LIGHT CHOSE THEM",
+    "THE FOREST ANSWERED",
+    "THE PORTAL IS ACTIVE",
+    "THIS CHANGES EVERYTHING",
+    "THE GATE IS OPEN",
+    "THE MAGIC TREE",
+    "THE PORTAL PULSE",
+    "A NEW WORLD",
+    "THE FOREST SECRET",
+    "THE MAGIC IS REAL",
+    "THE TREE RESPONDS",
+    "THE PORTAL CALLS",
+    "THE ADVENTURE BEGINS"
+  ],
+
+  "engagement": [
+    "should they enter?",
+    "would you go inside?",
+    "what is inside the portal?",
+    "should the cat jump in?",
+    "should they trust the forest?",
+    "what would you do?",
+    "do they go in?",
+    "is the portal safe?",
+    "should they turn back?",
+    "would you follow the light?",
+    "what happens next?",
+    "is this a trap?",
+    "would you explore this place?",
+    "is the forest protecting them?",
+    "should they trust the magic?"
+  ],
+
+  "retention": [
+    "wait until the portal opens",
+    "the portal is about to activate",
+    "the tree will react soon",
+    "the magic moment is coming",
+    "the forest is about to reveal something",
+    "the portal is almost ready",
+    "dont miss the portal opening",
+    "the big moment is coming",
+    "the tree will wake up",
+    "the portal is forming right now",
+    "watch the light closely",
+    "the forest will answer",
+    "something huge is coming",
+    "the magic is about to explode",
+    "stay for the portal"
+  ],
+
+  "loopBait": [
+    "did you see the portal move?",
+    "watch the portal again",
+    "look at the light carefully",
+    "did the tree move?",
+    "the portal changed",
+    "watch the glow again",
+    "did you notice the roots?",
+    "rewatch the portal moment",
+    "look at the forest closely",
+    "the magic changed something",
+    "did you see the spirit?",
+    "the portal reacts twice",
+    "watch the ending again",
+    "did the frog notice first?",
+    "did the cat see it?"
+  ],
+
+  "vibes": [
+    "magic forest vibes",
+    "mystical adventure",
+    "portal energy",
+    "enchanted forest",
+    "fantasy world",
+    "magical discovery",
+    "mysterious forest",
+    "portal mystery",
+    "hidden magic",
+    "ancient tree power",
+    "legendary forest",
+    "storybook energy",
+    "dreamlike adventure",
+    "fairytale vibes",
+    "otherworldly moment"
+  ],
+
+  "filler": [
+    "the frog is confused",
+    "the cat is curious",
+    "the frog feels the magic",
+    "the cat wants to explore",
+    "the frog senses danger",
+    "the cat doesnt want to leave",
+    "the frog noticed first",
+    "the cat sees the portal",
+    "the frog steps closer",
+    "the cat is ready",
+    "the frog hesitates",
+    "the cat trusts the light"
+  ],
+
+  "emotional": [
+    "this forest holds ancient secrets",
+    "the magic chose them for a reason",
+    "sometimes the path finds you",
+    "the forest remembers everything",
+    "magic is real if you believe"
+  ],
+
+  "trending": [
+    "the portal understood the assignment",
+    "main character energy",
+    "the forest ate and left no crumbs",
+    "its giving enchanted",
+    "rent free in the magic realm"
+  ],
+
+  "questions": [
+    "how is this portal even possible?",
+    "why does this forest feel alive?",
+    "who else would enter the portal?",
+    "can you look away from the light?",
+    "what sorcery is this?"
+  ],
+
+  "peakSequences": [
+    ["the cat found something strange...", "the portal is forming", "THE PORTAL OPENED"],
+    ["deep in the forest...", "the light is getting stronger", "MAGIC UNLOCKED"],
+    ["something is glowing in the forest", "the energy is building", "THE FOREST AWAKES"],
+    ["the frog heard something...", "something is coming", "THE TREE IS ALIVE"],
+    ["this portal should not exist", "the portal is almost open", "THE PORTAL IS REAL"],
+    ["they followed the light", "its getting brighter", "THIS IS MAGIC"],
+    ["the forest is waking up", "the magic is waking up", "THE SECRET REVEALED"],
+    ["they are not alone here", "the portal is pulling them", "THE LIGHT CHOSE THEM"],
+    ["this place feels different", "the air feels different", "THE FOREST ANSWERED"],
+    ["something is calling them", "the forest is watching", "THE ADVENTURE BEGINS"]
+  ],
+
+  "textPositions": ["top", "center", "bottom"],
+
+  "config": {
+    "minInterval": 1.5,
+    "maxInterval": 2.8,
+    "peakMoments": 3,
+    "peakTimingPercent": [0.20, 0.50, 0.80],
+    "engagementTimingPercent": [0.12, 0.40, 0.70],
+    "retentionTimingPercent": [0.55, 0.85],
+    "emotionalTimingPercent": [0.30, 0.65],
+    "trendingTimingPercent": [0.10, 0.50, 0.90],
+    "questionTimingPercent": [0.35, 0.75]
+  }
+}
