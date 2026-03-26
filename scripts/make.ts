@@ -27,6 +27,8 @@ function parseArgs() {
     intensity: opts["intensity"] as "low" | "medium" | "high" | undefined,
     font: opts["font"],
     speed: opts["speed"] ? Number(opts["speed"]) : undefined,
+    withMusic: opts["withMusic"] ? opts["withMusic"] !== "false" : true,
+    withSubtitles: opts["withSubtitles"] ? opts["withSubtitles"] !== "false" : true,
   };
 }
 
@@ -380,7 +382,9 @@ async function main() {
   ensureDirs();
 
   const tpl = loadJSON(cli.template, TemplateSchema, "Template");
-  const hooks = loadJSON(cli.hooks, HooksSchema, "Hooks");
+  const hooks = cli.withSubtitles
+    ? loadJSON(cli.hooks, HooksSchema, "Hooks")
+    : null;
 
   const loopCategory = cli.loopCategory ?? tpl.loopCategory;
   const musicCategory = cli.musicCategory ?? tpl.musicCategory;
@@ -395,20 +399,26 @@ async function main() {
   if (fontFile) console.log(`Font: ${fontFile}`);
 
   const loopFiles = findAssets("assets/loops", loopCategory, VIDEO_EXTS, "loops");
-  const musicFiles = findAssets("assets/music", musicCategory, AUDIO_EXTS, "music");
+  const musicFiles = cli.withMusic
+    ? findAssets("assets/music", musicCategory, AUDIO_EXTS, "music")
+    : [];
 
   if (loopFiles.length === 0) {
     console.error(`\n[X] No loop videos found in assets/loops/${loopCategory}/ or assets/loops/`);
     process.exit(1);
   }
-  if (musicFiles.length === 0) {
+  if (cli.withMusic && musicFiles.length === 0) {
     console.error(`\n[X] No music files found in assets/music/${musicCategory}/ or assets/music/`);
     process.exit(1);
   }
 
   console.log(`\nDuration: ${duration}s | Variants: ${variants} | Intensity: ${intensity}`);
   console.log(`Video speed: ${videoSpeed.toFixed(2)}x`);
-  console.log(`Hooks loaded: ${Object.keys(hooks).filter((k) => Array.isArray(hooks[k as keyof Hooks])).length} categories`);
+  console.log(`Music: ${cli.withMusic ? "enabled" : "DISABLED (original audio)"}`);
+  console.log(`Subtitles: ${cli.withSubtitles ? "enabled" : "DISABLED (no overlays)"}`);
+  if (cli.withSubtitles) {
+    console.log(`Hooks loaded: ${Object.keys(hooks).filter((k) => Array.isArray(hooks[k as keyof Hooks])).length} categories`);
+  }
 
   const runId = nowStamp();
   console.log(`Run ID: ${runId}\n`);
@@ -418,9 +428,11 @@ async function main() {
     const rng = new SeededRandom(seed);
 
     const shuffledLoops = rng.shuffle(loopFiles);
-    const music = rng.pick(musicFiles);
+    const music = cli.withMusic && musicFiles.length > 0 ? rng.pick(musicFiles) : null;
 
-    const overlays = generateOverlays(duration, hooks, rng, intensity);
+    const overlays = cli.withSubtitles && hooks
+      ? generateOverlays(duration, hooks, rng, intensity)
+      : [];
 
     const tag = `${runId}_v${String(i + 1).padStart(2, "0")}`;
     const outVideo = path.resolve(`out/renders/${tag}.mp4`);
@@ -429,19 +441,19 @@ async function main() {
     console.log(`[Variant ${i + 1}/${variants}]`);
     console.log(`  Seed: ${seed}`);
     console.log(`  Loops: ${shuffledLoops.length} videos in unique order`);
-    console.log(`  Music: ${path.basename(music)}`);
+    console.log(`  Music: ${music ? path.basename(music) : "(none — original audio)"}`);
     console.log(`  Speed: ${videoSpeed.toFixed(2)}x`);
     console.log(`  Hooks: ${overlays.length} text overlays`);
     console.log(`  Output: ${tag}.mp4`);
 
     await renderSatisfying({
       inputVideo: shuffledLoops,
-      inputAudio: music,
+      inputAudio: music ?? undefined,
       outputVideo: outVideo,
       outputThumb: outThumb,
       duration,
       videoSpeed,
-      overlays,
+      overlays: overlays.length > 0 ? overlays : undefined,
       seed,
       fontFile,
     });
@@ -454,8 +466,10 @@ async function main() {
       duration,
       videoSpeed: Number(videoSpeed.toFixed(3)),
       intensity,
+      withMusic: cli.withMusic,
+      withSubtitles: cli.withSubtitles,
       loops: shuffledLoops.map(l => path.basename(l)),
-      music: path.basename(music),
+      music: music ? path.basename(music) : null,
       overlays,
       generatedAt: new Date().toISOString(),
     };

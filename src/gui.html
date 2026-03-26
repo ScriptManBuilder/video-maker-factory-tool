@@ -612,6 +612,18 @@ input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var
           </div>
         </div>
         <div class="form-row">
+          <div class="field toggle-field">
+            <label>Background Music</label>
+            <label class="toggle-line"><input type="checkbox" id="make-enable-music" checked> Add music track</label>
+            <span class="hint">Turn off to keep original video audio only</span>
+          </div>
+          <div class="field toggle-field">
+            <label>Subtitles</label>
+            <label class="toggle-line"><input type="checkbox" id="make-enable-subtitles" checked> Add text overlays</label>
+            <span class="hint">Turn off for clean video without text</span>
+          </div>
+        </div>
+        <div class="form-row">
           <div class="field w3">
             <label>⚡ Video Speed</label>
             <div class="speed-row">
@@ -1074,15 +1086,19 @@ function runSSE(url, body) {
 
 // ─── Make ───────────────────────────────────────────────────────────────
 function runMake() {
+  const withMusic = document.getElementById('make-enable-music').checked;
+  const withSubtitles = document.getElementById('make-enable-subtitles').checked;
   runSSE('/api/make', {
     variants: parseInt(document.getElementById('make-variants').value) || undefined,
     duration: parseInt(document.getElementById('make-duration').value) || undefined,
     intensity: document.getElementById('make-intensity').value || undefined,
     loopCategory: document.getElementById('make-loop').value || undefined,
-    musicCategory: document.getElementById('make-music').value || undefined,
+    musicCategory: withMusic ? (document.getElementById('make-music').value || undefined) : undefined,
     template: document.getElementById('make-template').value || undefined,
     font: document.getElementById('make-font').value || undefined,
-    hooks: document.getElementById('make-hooks').value || undefined,
+    hooks: withSubtitles ? (document.getElementById('make-hooks').value || undefined) : undefined,
+    withMusic,
+    withSubtitles,
     speed: getSpeed('make'),
   });
 }

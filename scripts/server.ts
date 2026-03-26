@@ -217,6 +217,8 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     if (body.template) args.push("--template", body.template);
     if (body.font) args.push("--font", body.font);
     if (body.hooks) args.push("--hooks", body.hooks);
+    if (typeof body.withMusic === "boolean") args.push("--withMusic", String(body.withMusic));
+    if (typeof body.withSubtitles === "boolean") args.push("--withSubtitles", String(body.withSubtitles));
     args.push("--speed", String(body.speed ?? 1));
     runJob(res, "make", args);
     return;
