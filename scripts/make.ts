@@ -29,6 +29,7 @@ function parseArgs() {
     speed: opts["speed"] ? Number(opts["speed"]) : undefined,
     withMusic: opts["withMusic"] ? opts["withMusic"] !== "false" : true,
     withSubtitles: opts["withSubtitles"] ? opts["withSubtitles"] !== "false" : true,
+    musicVolume: opts["musicVolume"] !== undefined ? Number(opts["musicVolume"]) : 70,
   };
 }
 
@@ -456,6 +457,7 @@ async function main() {
       overlays: overlays.length > 0 ? overlays : undefined,
       seed,
       fontFile,
+      musicVolume: cli.musicVolume,
     });
 
     const meta = {

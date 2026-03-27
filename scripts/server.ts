@@ -219,6 +219,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     if (body.hooks) args.push("--hooks", body.hooks);
     if (typeof body.withMusic === "boolean") args.push("--withMusic", String(body.withMusic));
     if (typeof body.withSubtitles === "boolean") args.push("--withSubtitles", String(body.withSubtitles));
+    if (body.musicVolume !== undefined) args.push("--musicVolume", String(body.musicVolume));
     args.push("--speed", String(body.speed ?? 1));
     runJob(res, "make", args);
     return;

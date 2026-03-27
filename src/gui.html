@@ -614,8 +614,18 @@ input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var
         <div class="form-row">
           <div class="field toggle-field">
             <label>Background Music</label>
-            <label class="toggle-line"><input type="checkbox" id="make-enable-music" checked> Add music track</label>
+            <label class="toggle-line"><input type="checkbox" id="make-enable-music" checked onchange="toggleMusicVolume()"> Add music track</label>
             <span class="hint">Turn off to keep original video audio only</span>
+          </div>
+          <div class="field w2">
+            <label>🎵 Music Volume (mixed over original audio)</label>
+            <div class="speed-slider-wrap">
+              <span style="font-size:11px;color:var(--text3);white-space:nowrap">🔇 0%</span>
+              <input type="range" id="make-music-volume" min="0" max="100" step="5" value="70" style="flex:1">
+              <span style="font-size:11px;color:var(--text3);white-space:nowrap">🔊 100%</span>
+              <span class="speed-val" id="make-music-volume-val" style="min-width:42px">70%</span>
+            </div>
+            <span class="hint">Original audio always plays. Music is layered on top at this volume.</span>
           </div>
           <div class="field toggle-field">
             <label>Subtitles</label>
@@ -1024,6 +1034,9 @@ document.addEventListener('input', function(e) {
     const valEl = document.getElementById(prefix + '-speed-val');
     valEl.textContent = parseFloat(e.target.value).toFixed(2) + 'x';
   }
+  if (e.target.id === 'make-music-volume') {
+    document.getElementById('make-music-volume-val').textContent = e.target.value + '%';
+  }
 });
 
 // ─── SSE runner ─────────────────────────────────────────────────────────
@@ -1088,6 +1101,7 @@ function runSSE(url, body) {
 function runMake() {
   const withMusic = document.getElementById('make-enable-music').checked;
   const withSubtitles = document.getElementById('make-enable-subtitles').checked;
+  const musicVolume = withMusic ? parseInt(document.getElementById('make-music-volume').value) : 0;
   runSSE('/api/make', {
     variants: parseInt(document.getElementById('make-variants').value) || undefined,
     duration: parseInt(document.getElementById('make-duration').value) || undefined,
@@ -1099,8 +1113,17 @@ function runMake() {
     hooks: withSubtitles ? (document.getElementById('make-hooks').value || undefined) : undefined,
     withMusic,
     withSubtitles,
+    musicVolume,
     speed: getSpeed('make'),
   });
+}
+
+function toggleMusicVolume() {
+  const on = document.getElementById('make-enable-music').checked;
+  document.getElementById('make-music-volume').disabled = !on;
+  const valEl = document.getElementById('make-music-volume-val');
+  if (!on) { valEl.textContent = 'OFF'; valEl.classList.add('off'); }
+  else { valEl.textContent = document.getElementById('make-music-volume').value + '%'; valEl.classList.remove('off'); }
 }
 function quickMake(v, d, i) {
   document.getElementById('make-variants').value = v;

@@ -30,6 +30,7 @@ export interface RenderOpts {
   overlays?: OverlayLine[];
   seed: number;
   fontFile?: string;
+  musicVolume?: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -214,6 +215,7 @@ export async function renderSatisfying(opts: RenderOpts) {
     overlays,
     seed,
     fontFile,
+    musicVolume,
   } = opts;
 
   ensureDir(outputVideo);
@@ -266,8 +268,38 @@ export async function renderSatisfying(opts: RenderOpts) {
 
   args.push("-t", String(duration), "-filter_script:v", vfFile, "-map", "0:v:0");
 
+  // Build atempo chain for original audio to match video speed
+  // atempo only supports 0.5–2.0 per instance, so chain for higher speeds
+  let origAtempo = "";
+  if (finalVideoSpeed > 1) {
+    const parts: string[] = [];
+    let remaining = finalVideoSpeed;
+    while (remaining > 2.0) {
+      parts.push("atempo=2.0");
+      remaining /= 2.0;
+    }
+    parts.push(`atempo=${remaining.toFixed(4)}`);
+    origAtempo = parts.join(",") + ",";
+  }
+
   if (inputAudio) {
-    args.push("-map", "1:a:0", "-filter:a", `atempo=${audioSpeed},volume=${audioVolume}`);
+    // Mix original audio (sped up to match video) + music track at specified volume
+    const musicVol = Math.max(0, Math.min(100, musicVolume ?? 70)) / 100;
+    const origVol = 1.0;
+    args.push(
+      "-filter_complex",
+      `[0:a]${origAtempo}volume=${origVol.toFixed(2)},aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[orig];` +
+      `[1:a]atempo=${audioSpeed},volume=${(musicVol * parseFloat(audioVolume)).toFixed(3)},aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[mus];` +
+      `[orig][mus]amix=inputs=2:duration=first:dropout_transition=2[aout]`,
+      "-map", "[aout]",
+    );
+  } else if (finalVideoSpeed > 1) {
+    // Speed up original audio to match video speed
+    args.push(
+      "-filter_complex",
+      `[0:a]${origAtempo}aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[aout]`,
+      "-map", "[aout]",
+    );
   } else {
     // Keep original scene audio if present; if not, render a silent video.
     args.push("-map", "0:a?");
